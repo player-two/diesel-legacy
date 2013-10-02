@@ -1,9 +1,10 @@
-module.define('mfw', function() {
+spider.execute('diesel');
 
-    // initialize all the modules and destroy their constructors' container
-    var model = module.import('model'),
-        view = module.import('view'),
-        controller = module.import('controller'),
+spider.define('diesel', function() {
+
+    var model = spider.import('model'),
+        view = spider.import('view'),
+        controller = spider.import('controller'),
         settings = {
             auth:{
                 views:[],
@@ -23,6 +24,17 @@ module.define('mfw', function() {
         };
     },
 
+    init = function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // start async call for auth checker
+            model[settings.auth.property] = false;
+            view.init();
+            navigate(location.pathname);
+        });
+    },
+
+    // navigate is put in the core because it is considered a state change
+    // that affects all components of the framework
     navigate = function(url) {
         view.hide(function() {
             // check to see if the view requires user authentication
@@ -48,9 +60,7 @@ module.define('mfw', function() {
         };
     };
 
-    mediator.listen('navigate', navigate);
-
-    return {
+    window.diesel = {
         config:{
             router:function(newSettings) {
                 config(settings, newSettings);
@@ -58,11 +68,7 @@ module.define('mfw', function() {
             view:view.config
         },
         controller:controller.register,
-        init:function() {
-            model[settings.auth.property] = false;
-            view.initRoot();
-            navigate(location.pathname);
-        },
+        init:init,
         navigate:navigate,
         service:controller.createService
     };

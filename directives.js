@@ -1,11 +1,13 @@
-module.define('directives', function(){
+spider.define('directives', function(){
 
-    var model = module.import('model'),
+    var controller = spider.import('controller'),
+        model = spider.import('model'),
     
     actions = {
     
         nav:function(attr) {
-            mediator.emit('navigate', attr);
+            var data = attr.split(',');
+            diesel.navigate(data[0], data[1]);
         },
         
         model:function(attr) {
@@ -27,7 +29,7 @@ module.define('directives', function(){
             for(i = 0; i < args.length; i++) {
                 args[i] = args[i].trim();
             };
-            mediator.emit('controllerAction', fn, args);
+            controller[fn].apply(controller, args);
         }
 
     };

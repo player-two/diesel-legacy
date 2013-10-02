@@ -1,10 +1,11 @@
-module.define('view', function() {
+spider.define('view', function() {
 
-    var directives = module.import('directives'),
-        model = module.import('model'),
-        templater = module.import('templater'),
+    var directives = spider.import('directives'),
+        frame = spider.import('frame'),
+        model = spider.import('model'),
 
         cache = {},
+        frames = {},
         settings = {
             viewRoot:'/views',
             transition:{
@@ -12,7 +13,6 @@ module.define('view', function() {
                 out:function(view, callback) { view.style.display = 'none'; callback(); }
             }
         },
-        viewElement = document.querySelector('[data-view]'),
 
     config = function(settings, newSettings) {
         for(prop in newSettings) {
@@ -24,42 +24,52 @@ module.define('view', function() {
         };
     },
 
-    prepare = function(htmlTemplate) {
-        viewElement.innerHTML = htmlTemplate;
-        templater.initialize(viewElement);
-        directives.bind(viewElement);
-        settings.transition.tin(viewElement);
+    hide = function(callback) {
+        settings.transition.out(frames['main'].container, callback);
+    },
+
+    init = function() {
+        directives.bind(document.querySelectorAll('nav')[0]);
+        var nodeList = document.querySelectorAll('[data-view]');
+        for(var i = 0, ilen = nodeList.length; i < ilen; i++) {
+            var id = nodeList[i].getAttribute('data-view');
+            frames[id] = frame.create(nodeList[i]);
+            if(id !== 'main') {
+                frames[id].reset();
+                frames[id].start();
+            };
+        };
     },
 
     load = function(url) {
         if(url in cache) {
-            prepare(cache[url]);
+            show(cache[url]);
         }else{
             // get the template from the server
             var request = new XMLHttpRequest();
             request.onreadystatechange = function() {
                 if(request.readyState === 4) {
                     cache[url] = request.responseText;
-                    prepare(request.responseText);
+                    show(request.responseText);
                 };
             };
             request.open('GET', '/views' + url + '.html', true);
             request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             request.send();
         };
+    },
+    
+    show = function(html) {
+        frames['main'].setContent(html);
+        settings.transition.tin(frames['main'].container);
     };
 
     return {
         config:function(newSettings) {
             config(settings, newSettings);
         },
-        hide:function(callback) {
-            settings.transition.out(viewElement, callback);
-        },
-        initRoot:function() {
-            templater.initialize(document.body);
-            directives.bind(document.body);
-        },
+        hide:hide,
+        init:init,
         load:load
     };
 

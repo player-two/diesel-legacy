@@ -1,4 +1,4 @@
-module.define('model', function() {
+spider.define('model', function() {
     
     var model = {};
     

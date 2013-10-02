@@ -1,8 +1,8 @@
-module.define('parser', function(model){
+spider.define('parser', function(model){
 
-    var model = module.import('model'),
+    var model = spider.import('model'),
     
-    parse:function(templateString) {
+    parse = function(templateString) {
         return templateString.replace(/{{\s?([\w\.]+)\s?}}/g, replacer);
     },
 
